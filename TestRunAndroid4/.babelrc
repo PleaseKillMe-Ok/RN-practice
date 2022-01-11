@@ -1,0 +1,7 @@
+{
+    "plugins": [
+      ["babel-plugin-root-import", {
+          "rootPathPrefix": "~"  // 项目根目录别名~, 导包import '~/'
+      }]
+    ]
+  }
