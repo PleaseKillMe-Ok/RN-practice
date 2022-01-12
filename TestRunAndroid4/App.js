@@ -15,10 +15,10 @@ import {
   Button,
   Image,
 } from 'react-native';
-import {
-  Colors,
-  Header,
-} from 'react-native/Libraries/NewAppScreen';
+import { Provider, useDispatch, useSelector } from 'react-redux';
+import store from '~/src/store'
+
+
 
 import Config from './src/config/DebugConfig';
 import { NavigationContainer } from '@react-navigation/native';
@@ -26,6 +26,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { createDrawerNavigator } from '@react-navigation/drawer';
+import { decremented, incremented } from './src/store/features/testSlice';
 
 // 导入组件
 const HomeScreen = lazy(() => import('~/src/containers/HomeScreen'));
@@ -57,6 +58,18 @@ function Nesteds () {
   )
 }
 
+// 拖拉导航组件
+// function NestedsDraw () {
+//   return (
+//     <NavigationContainer>
+//       <Drawer.Navigator initialRouteName="DrawerHome">
+//         <Drawer.Screen name="DrawerHome" component={Nested1} />
+//         <Drawer.Screen name="DrawerNotifications" component={Nested2} />
+//       </Drawer.Navigator>
+//     </NavigationContainer>
+//   )
+// }
+
 
 // 图片组件
 function Test() {
@@ -70,6 +83,11 @@ function Test() {
 function Test2 ({ navigation, route }) {
 
   const [count, setCount] = useState(0);
+  // 定义转发器
+  const dispatch = useDispatch();
+  // 获取状态树中指定数据
+  const { value } = useSelector((state) => state.test);
+
 
   // 在dom渲染前调用, 可阻塞渲染过程
   useLayoutEffect(() => {
@@ -101,6 +119,19 @@ function Test2 ({ navigation, route }) {
             navigation.navigate('Nested', { screen: 'nested2666'});
           }}></Button>
           <Text>数值为:{count}</Text>
+
+          ------------------------------
+          <Button title="修改redux状态树中的value-----加一" onPress={() => {
+            dispatch(incremented)
+          }}></Button>
+
+          <Button title="修改redux状态树中的value-----减一" onPress={() => {
+            dispatch(decremented)
+          }}></Button>
+
+          {/* {value} */}
+            {/* 状态树中的value值: { value } */}
+          <Text>状态树中的value值: {value}</Text>
       </View>
   )
 }
@@ -114,43 +145,47 @@ const App = () => {
   // };
 
   return (
-    <NavigationContainer>
-      {/* 处理懒加载的组件, 在组件渲染过程中执行fallback对应的组件 */}
-      <Suspense fallback={<Test />}>
-        <Stack.Navigator 
-          initialRouteName='Home'
-          screenOptions={{
-            headerShown: false,  // 不显示头部信息, 指定为false后, 其他header设置无效
-            title: 'test2',      
-            headerStyle: {
-              backgroundColor: '#f4511e'
-            },
-            headerTintColor: '#fff',
-            headerTitleStyle: {
-              fontWeight: 'bold'
-            }
-          }}>
-            <Stack.Screen name="Home" component={HomeScreen} options={{ title: '首页'}}/>
-            <Stack.Screen name="Prepare" component={PrepareScreen} options={{ title: '预热页'}}/>
+    <Provider store={store}>
+      <NavigationContainer>
+        {/* 处理懒加载的组件, 在组件渲染过程中执行fallback对应的组件 */}
+        <Suspense fallback={<Test />}>
+          <Stack.Navigator 
+            initialRouteName='Home'
+            screenOptions={{
+              headerShown: false,  // 不显示头部信息, 指定为false后, 其他header设置无效
+              title: 'test2',      
+              headerStyle: {
+                backgroundColor: '#f4511e'
+              },
+              headerTintColor: '#fff',
+              headerTitleStyle: {
+                fontWeight: 'bold'
+              }
+            }}>
+              <Stack.Screen name="Home" component={HomeScreen} options={{ title: '首页'}}/>
+              <Stack.Screen name="Prepare" component={PrepareScreen} options={{ title: '预热页'}}/>
 
-            <Stack.Screen 
-              name="Test2" 
-              component={Test2}
-              options={{ 
-                headerTitle: (props) => <Test {...props} />,
-                headerRight: (props) => (
-                  <Button
-                    title="按钮"
-                    color="#fff">
-                  </Button>
-                )
-              }}
-              />
-              {/* 嵌套 */}
-              <Stack.Screen name="Nested" component={Nesteds} options={{headerShown: false}}></Stack.Screen>
-        </Stack.Navigator>
-      </Suspense>
-    </NavigationContainer>
+              <Stack.Screen 
+                name="Test2" 
+                component={Test2}
+                options={{ 
+                  headerTitle: (props) => <Test {...props} />,
+                  headerRight: (props) => (
+                    <Button
+                      title="按钮"
+                      color="#fff">
+                    </Button>
+                  )
+                }}
+                />
+                {/* 嵌套 */}
+                <Stack.Screen name="Nested" component={Nesteds} options={{headerShown: false}}></Stack.Screen>
+
+                {/* <Stack.Screen name="DrawerNested" component={NestedsDraw} options={{headerShown: false}}></Stack.Screen> */}
+          </Stack.Navigator>
+        </Suspense>
+      </NavigationContainer>
+    </Provider>
   );
 };
 
